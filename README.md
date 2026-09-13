@@ -167,7 +167,8 @@ images are tagged with the version alongside `latest` (master releases) and `edg
     docker run nebulous/infinitude:2026.9.0
 
 When reporting issues or adding Compatibility Matrix entries, include the version you are
-running. Development builds also carry a git tag per release for linking from the wiki.
+running. Merges to master are tagged with the version and published as a GitHub Release
+with auto-generated notes.
 
 Maintainer note: the version source of truth is `$VERSION` in `lib/Infinitude.pm`. A
 pre-commit hook (`.githooks/pre-commit`) advances it on commits that change the shipped

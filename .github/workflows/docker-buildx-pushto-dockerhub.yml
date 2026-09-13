@@ -69,11 +69,16 @@ jobs:
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-      - name: Tag release
+      - name: Tag and release
         if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           v="${{ steps.ver.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "$v" 2>/dev/null || true
-          git push origin "$v" 2>/dev/null || true
+          if ! git rev-parse -q --verify "refs/tags/$v" >/dev/null; then
+            git tag "$v"
+            git push origin "$v"
+          fi
+          gh release create "$v" --generate-notes --title "Infinitude $v" 2>/dev/null || true
