@@ -24,6 +24,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.inputs.branch || github.ref }}
+          fetch-depth: 0
 
       - name: Extract version
         id: ver
@@ -81,4 +82,13 @@ jobs:
             git tag "$v"
             git push origin "$v"
           fi
-          gh release create "$v" --generate-notes --title "Infinitude $v" 2>/dev/null || true
+          # Before CalVer adoption this repo had no tags, so the first
+          # generated release would cover the entire history. Anchor the
+          # notes at the pre-push master head instead.
+          if ! git ls-remote --exit-code --tags origin baseline >/dev/null 2>&1; then
+            git tag baseline "${{ github.event.before }}"
+            git push origin baseline || true
+          fi
+          prev=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
+          prev=${prev:-baseline}
+          gh release create "$v" --generate-notes --notes-start-tag "$prev" --title "Infinitude $v" 2>/dev/null || true
