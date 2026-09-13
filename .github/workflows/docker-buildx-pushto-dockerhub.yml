@@ -87,8 +87,9 @@ jobs:
           # notes at the pre-push master head instead.
           if ! git ls-remote --exit-code --tags origin baseline >/dev/null 2>&1; then
             git tag baseline "${{ github.event.before }}"
-            git push origin baseline || true
+            git push origin baseline
           fi
           prev=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
           prev=${prev:-baseline}
-          gh release create "$v" --generate-notes --notes-start-tag "$prev" --title "Infinitude $v" 2>/dev/null || true
+          gh release view "$v" --json name >/dev/null 2>&1 || \
+            gh release create "$v" --generate-notes --notes-start-tag "$prev" --title "Infinitude $v"
